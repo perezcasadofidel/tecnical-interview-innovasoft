@@ -43,10 +43,27 @@ const RegisterPage: React.FC = () => {
       const response = await registerApi(values);
       setSuccessMessage(response.message || "Usuario creado correctamente.");
       setTimeout(() => navigate("/login", { replace: true }), 1200);
-    } catch {
-      setErrorMessage(
-        "Hubo un inconveniente con la transaccion. Revise la informacion.",
-      );
+    } catch (error: unknown) {
+      let errorMessage =
+        "Hubo un inconveniente con la transacción. Revise la información.";
+
+      // Si es un error de axios con respuesta del servidor
+      if (
+        error instanceof Error &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response
+      ) {
+        const responseData = error.response.data as Record<string, unknown>;
+
+        // Mostrar el mensaje específico del servidor
+        if (responseData.message && typeof responseData.message === "string") {
+          errorMessage = responseData.message;
+        }
+      }
+
+      setErrorMessage(errorMessage);
     } finally {
       setSubmitting(false);
     }

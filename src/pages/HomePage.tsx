@@ -8,7 +8,7 @@ const HomePage: React.FC = () => {
       alignItems="center"
       justifyContent="center"
       textAlign="center"
-      sx={{ minHeight: "60vh" }}
+      sx={{ minHeight: "60vh", width: "100%" }}
     >
       <Typography variant="h2" fontWeight={800}>
         Bienvenido

@@ -167,7 +167,7 @@ const MainLayout: React.FC = () => {
               fontSize: { xs: "0.95rem", sm: "1.25rem" },
             }}
           >
-            Gestion de clientes
+            Gestión de clientes
           </Typography>
           <IconButton
             color="inherit"
