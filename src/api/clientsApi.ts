@@ -8,14 +8,46 @@ import {
   UpdateClientRequest,
 } from "../types/client";
 
+type ClientsApiResponse =
+  | ClientListItem[]
+  | {
+      data?: unknown;
+      clientes?: unknown;
+      items?: unknown;
+      results?: unknown;
+    };
+
+const normalizeClientList = (
+  response: ClientsApiResponse,
+): ClientListItem[] => {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  const candidates = [
+    response.data,
+    response.clientes,
+    response.items,
+    response.results,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as ClientListItem[];
+    }
+  }
+
+  throw new Error("La respuesta de clientes no tiene el formato esperado.");
+};
+
 export const searchClientsApi = async (
   payload: SearchClientsRequest,
 ): Promise<ClientListItem[]> => {
-  const { data } = await httpClient.post<ClientListItem[]>(
+  const { data } = await httpClient.post<ClientsApiResponse>(
     "/api/local/clientes/listado",
     payload,
   );
-  return data;
+  return normalizeClientList(data);
 };
 
 export const deleteClientApi = async (clientId: string): Promise<void> => {
