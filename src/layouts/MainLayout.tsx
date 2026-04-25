@@ -43,8 +43,8 @@ const MainLayout: React.FC = () => {
     setMobileOpen((prev) => !prev);
   };
 
-  const handleLogout = (): void => {
-    logout();
+  const handleLogout = async (): Promise<void> => {
+    await logout();
     navigate("/login", { replace: true });
   };
 

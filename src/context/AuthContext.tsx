@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo, useState } from "react";
 
 import { AUTH_STORAGE_KEY, REMEMBER_USERNAME_KEY } from "../constants/storage";
-import { loginApi } from "../api/authApi";
+import { loginApi, logoutApi } from "../api/authApi";
 import { AuthSession, LoginRequest } from "../types/auth";
 
 interface AuthContextValue {
@@ -9,7 +9,7 @@ interface AuthContextValue {
   rememberedUsername: string;
   isAuthenticated: boolean;
   login: (payload: LoginRequest, rememberMe: boolean) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const getInitialSession = (): AuthSession | null => {
@@ -68,7 +68,13 @@ export const AuthProvider: React.FC<React.PropsWithChildren<unknown>> = ({
     }
   };
 
-  const logout = (): void => {
+  const logout = async (): Promise<void> => {
+    try {
+      await logoutApi();
+    } catch {
+      // Se limpia la sesion local aunque falle el endpoint de logout.
+    }
+
     localStorage.removeItem(AUTH_STORAGE_KEY);
     setSession(null);
   };
