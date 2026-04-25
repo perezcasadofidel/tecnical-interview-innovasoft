@@ -40,6 +40,36 @@ const normalizeClientList = (
   throw new Error("La respuesta de clientes no tiene el formato esperado.");
 };
 
+type InterestsApiResponse =
+  | Interest[]
+  | {
+      data?: unknown;
+      intereses?: unknown;
+      items?: unknown;
+      results?: unknown;
+    };
+
+const normalizeInterestList = (response: InterestsApiResponse): Interest[] => {
+  if (Array.isArray(response)) {
+    return response;
+  }
+
+  const candidates = [
+    response.data,
+    response.intereses,
+    response.items,
+    response.results,
+  ];
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return candidate as Interest[];
+    }
+  }
+
+  throw new Error("La respuesta de intereses no tiene el formato esperado.");
+};
+
 export const searchClientsApi = async (
   payload: SearchClientsRequest,
 ): Promise<ClientListItem[]> => {
@@ -55,10 +85,10 @@ export const deleteClientApi = async (clientId: string): Promise<void> => {
 };
 
 export const getInterestsApi = async (): Promise<Interest[]> => {
-  const { data } = await httpClient.get<Interest[]>(
+  const { data } = await httpClient.get<InterestsApiResponse>(
     "/api/local/clientes/intereses/listado",
   );
-  return data;
+  return normalizeInterestList(data);
 };
 
 export const getClientApi = async (clientId: string): Promise<ClientDetail> => {
