@@ -81,9 +81,6 @@ const ClientFormPage: React.FC = () => {
       setLoading(true);
 
       try {
-        const loadedInterests = await getInterestsApi();
-        setInterests(loadedInterests);
-
         if (id) {
           const detail = await getClientApi(id);
 
@@ -102,6 +99,9 @@ const ClientFormPage: React.FC = () => {
             interesFK: detail.interesesId,
           });
         }
+
+        const loadedInterests = await getInterestsApi();
+        setInterests(loadedInterests);
       } catch {
         setErrorMessage(
           "Hubo un inconveniente con la transaccion. No se pudo cargar la informacion.",
