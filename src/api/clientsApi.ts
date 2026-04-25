@@ -70,6 +70,64 @@ const normalizeInterestList = (response: InterestsApiResponse): Interest[] => {
   throw new Error("La respuesta de intereses no tiene el formato esperado.");
 };
 
+type ClientDetailRaw = Record<string, unknown>;
+
+type ClientDetailApiResponse =
+  | ClientDetailRaw
+  | {
+      data?: unknown;
+      cliente?: unknown;
+      item?: unknown;
+      result?: unknown;
+    };
+
+const asString = (value: unknown): string => {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value == null) {
+    return "";
+  }
+
+  return String(value);
+};
+
+const normalizeClientDetail = (
+  response: ClientDetailApiResponse,
+): ClientDetail => {
+  const raw = (
+    "data" in response
+      ? (response.data ?? response.cliente ?? response.item ?? response.result)
+      : response
+  ) as unknown;
+
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error(
+      "La respuesta de detalle de cliente no tiene el formato esperado.",
+    );
+  }
+
+  const detail = raw as ClientDetailRaw;
+  const sexoRaw = detail.sexo;
+
+  return {
+    id: asString(detail.id),
+    nombre: asString(detail.nombre),
+    apellidos: asString(detail.apellidos),
+    identificacion: asString(detail.identificacion),
+    telefonoCelular: asString(detail.telefonoCelular ?? detail.celular),
+    otroTelefono: asString(detail.otroTelefono),
+    direccion: asString(detail.direccion),
+    fNacimiento: asString(detail.fNacimiento),
+    fAfiliacion: asString(detail.fAfiliacion),
+    sexo: sexoRaw === "F" ? "F" : "M",
+    resenaPersonal: asString(detail.resenaPersonal ?? detail.resennaPersonal),
+    imagen: asString(detail.imagen),
+    interesesId: asString(detail.interesesId ?? detail.interesFK),
+  };
+};
+
 export const searchClientsApi = async (
   payload: SearchClientsRequest,
 ): Promise<ClientListItem[]> => {
@@ -92,10 +150,10 @@ export const getInterestsApi = async (): Promise<Interest[]> => {
 };
 
 export const getClientApi = async (clientId: string): Promise<ClientDetail> => {
-  const { data } = await httpClient.get<ClientDetail>(
+  const { data } = await httpClient.get<ClientDetailApiResponse>(
     `/api/local/clientes/${clientId}`,
   );
-  return data;
+  return normalizeClientDetail(data);
 };
 
 export const createClientApi = async (
